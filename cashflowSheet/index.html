@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cashflow — Баланс (RU)</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Панель (скрывается при печати) -->
+  <div class="toolbar no-print">
+    <div class="toolbar__left">
+      <strong>Cashflow Sheet</strong>
+      <span class="muted">— автоподсчёт + сохранение</span>
+    </div>
+    <div class="toolbar__right">
+      <label class="tool">
+        Валюта:
+        <select id="currencySelect">
+          <option value="₽">₽</option>
+          <option value="€">€</option>
+          <option value="$">$</option>
+          <option value="£">£</option>
+        </select>
+      </label>
+      <button class="btn" id="printBtn" type="button">Печать</button>
+      <button class="btn" id="exportBtn" type="button">Экспорт</button>
+      <label class="btn fileBtn">
+        Импорт <input id="importInput" type="file" accept="application/json" />
+      </label>
+      <button class="btn btn--danger" id="resetBtn" type="button">Сброс</button>
+    </div>
+  </div>
+
+  <!-- “Лист” -->
+  <main class="page">
+
+    <!-- Верхняя строка -->
+    <section class="topRow">
+      <div class="topCell">
+        <div class="topLabel">Профессия</div>
+        <input class="lineInput" data-path="meta.profession" type="text" placeholder="Напр. Аудитор" />
+      </div>
+
+      <div class="topCenter">
+        <div class="goalTitle">Цель:</div>
+        <div class="goalText">
+          Выйти из “Крысиных бегов” на “Быстрый трек”, увеличив <b>пассивный доход</b> так,
+          чтобы он стал больше ваших <b>расходов</b>.
+        </div>
+      </div>
+
+      <div class="topCell">
+        <div class="topLabel">Игрок</div>
+        <input class="lineInput" data-path="meta.player" type="text" placeholder="Ваше имя" />
+      </div>
+    </section>
+
+    <!-- Верхняя часть -->
+    <section class="gridTop">
+
+      <!-- ЛЕВО: Income Statement -->
+      <div class="box">
+        <div class="bar">Отчёт о доходах (Income Statement)</div>
+
+        <div class="subBar">Доходы</div>
+        <div class="rows">
+          <div class="row">
+            <div class="lbl">Зарплата</div>
+            <input class="numInput" data-type="number" data-path="income.salary" type="text" />
+          </div>
+          <div class="row">
+            <div class="lbl">Проценты (Interest)</div>
+            <input class="numInput" data-type="number" data-path="income.interest" type="text" />
+          </div>
+          <div class="row">
+            <div class="lbl">Дивиденды</div>
+            <input class="numInput" data-type="number" data-path="income.dividends" type="text" />
+          </div>
+
+          <!-- МНОГО ПОЛЕЙ: Недвижимость CF -->
+          <div class="sectionTitle">Недвижимость (Cash Flow)</div>
+          <div class="miniHead2">
+            <div>Объект</div>
+            <div class="right">Cash Flow</div>
+          </div>
+          <div id="incomeProperties"></div>
+
+          <!-- МНОГО ПОЛЕЙ: Бизнес CF -->
+          <div class="sectionTitle">Бизнес (Cash Flow)</div>
+          <div class="miniHead2">
+            <div>Бизнес</div>
+            <div class="right">Cash Flow</div>
+          </div>
+          <div id="incomeBusinesses"></div>
+
+          <!-- МНОГО ПОЛЕЙ: Прочие доходы -->
+          <div class="sectionTitle">Прочие доходы</div>
+          <div class="miniHead2">
+            <div>Источник</div>
+            <div class="right">Сумма</div>
+          </div>
+          <div id="incomeOther"></div>
+        </div>
+
+        <div class="subBar">Расходы</div>
+        <div class="rows">
+          <div class="row">
+            <div class="lbl">Налоги</div>
+            <input class="numInput" data-type="number" data-path="expenses.taxes" type="text" />
+          </div>
+          <div class="row">
+            <div class="lbl">Ипотека (платёж)</div>
+            <input class="numInput" data-type="number" data-path="expenses.homeMortgagePay" type="text" />
+          </div>
+          <div class="row">
+            <div class="lbl">Студ. кредит (платёж)</div>
+            <input class="numInput" data-type="number" data-path="expenses.schoolLoanPay" type="text" />
+          </div>
+          <div class="row">
+            <div class="lbl">Авто (платёж)</div>
+            <input class="numInput" data-type="number" data-path="expenses.carPay" type="text" />
+          </div>
+          <div class="row">
+            <div class="lbl">Кредитная карта (мин.)</div>
+            <input class="numInput" data-type="number" data-path="expenses.creditCardMin" type="text" />
+          </div>
+          <div class="row">
+            <div class="lbl">Рассрочки/ритейл (платёж)</div>
+            <input class="numInput" data-type="number" data-path="expenses.retailPay" type="text" />
+          </div>
+          <div class="row">
+            <div class="lbl">Прочие расходы</div>
+            <input class="numInput" data-type="number" data-path="expenses.other" type="text" />
+          </div>
+
+          <div class="row">
+            <div class="lbl">Расходы на детей</div>
+            <input class="numInput" data-path="expenses.childAuto" type="text" readonly />
+          </div>
+
+          <div class="row">
+            <div class="lbl">Банковский кредит (платёж)</div>
+            <input class="numInput" data-type="number" data-path="expenses.bankLoanPay" type="text" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ПРАВО: Auditor / Totals -->
+      <div class="box">
+        <div class="bar">Аудитор</div>
+        <div class="note">Человек справа от вас</div>
+
+        <div class="formula">
+          <div class="formula__title">Пассивный доход =</div>
+          <div class="formula__text">
+            (Проценты + Дивиденды + Недвижимость + Бизнес)
+          </div>
+          <div class="underlineValue" id="passiveIncomeOut">0</div>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="totals">
+          <div class="totRow">
+            <div class="totLbl">Общий доход:</div>
+            <div class="underlineValue" id="totalIncomeOut">0</div>
+          </div>
+
+          <div class="childrenBox">
+            <div class="childrenRow">
+              <div class="childrenLbl">
+                Кол-во детей:<br>
+                <span class="smallNote">(начинайте с 0)</span>
+              </div>
+              <input class="numInput" data-type="int" data-path="children.count" type="text" />
+            </div>
+
+            <div class="childrenRow">
+              <div class="childrenLbl">Расход на 1 ребёнка:</div>
+              <input class="numInput" data-type="number" data-path="children.perChildExpense" type="text" />
+            </div>
+          </div>
+
+          <div class="totRow">
+            <div class="totLbl">Общие расходы:</div>
+            <div class="underlineValue" id="totalExpensesOut">0</div>
+          </div>
+
+          <div class="totRow">
+            <div class="totLbl">Ежемесячный Cash Flow:</div>
+            <div class="underlineValue" id="monthlyCashflowOut">0</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Balance Sheet -->
+    <section class="box balance">
+      <div class="bar center">Баланс (Balance Sheet)</div>
+
+      <div class="balanceGrid">
+
+        <!-- Assets -->
+        <div class="half">
+          <div class="subBar center">Активы</div>
+
+          <div class="rows">
+            <div class="row">
+              <div class="lbl">Сбережения</div>
+              <input class="numInput" data-type="number" data-path="assets.savings" type="text" />
+            </div>
+
+            <div class="sectionTitle">Акции/Паи/CD</div>
+            <div class="miniHead">
+              <div>Название</div>
+              <div class="center">Кол-во</div>
+              <div class="right">Цена/шт</div>
+            </div>
+            <div id="stocksRows"></div>
+
+            <div class="sectionTitle">Недвижимость</div>
+            <div class="miniHead">
+              <div>Объект</div>
+              <div class="center">Взнос</div>
+              <div class="right">Стоимость</div>
+            </div>
+            <div id="realEstateRows"></div>
+
+            <div class="sectionTitle">Бизнес</div>
+            <div class="miniHead">
+              <div>Бизнес</div>
+              <div class="center">Взнос</div>
+              <div class="right">Стоимость</div>
+            </div>
+            <div id="businessRows"></div>
+
+            <div class="totRow tight">
+              <div class="totLbl">Итого активов:</div>
+              <div class="underlineValue" id="totalAssetsOut">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Liabilities -->
+        <div class="half">
+          <div class="subBar center">Обязательства</div>
+
+          <div class="rows">
+            <div class="row">
+              <div class="lbl">Ипотека (остаток)</div>
+              <input class="numInput" data-type="number" data-path="liabilities.homeMortgage" type="text" />
+            </div>
+            <div class="row">
+              <div class="lbl">Студ. кредиты (остаток)</div>
+              <input class="numInput" data-type="number" data-path="liabilities.schoolLoans" type="text" />
+            </div>
+            <div class="row">
+              <div class="lbl">Авто кредиты (остаток)</div>
+              <input class="numInput" data-type="number" data-path="liabilities.carLoans" type="text" />
+            </div>
+            <div class="row">
+              <div class="lbl">Кредитные карты (остаток)</div>
+              <input class="numInput" data-type="number" data-path="liabilities.creditCards" type="text" />
+            </div>
+            <div class="row">
+              <div class="lbl">Ритейл/рассрочки (остаток)</div>
+              <input class="numInput" data-type="number" data-path="liabilities.retailDebt" type="text" />
+            </div>
+            <div class="row">
+              <div class="lbl">RE Mortgage (остаток)</div>
+              <input class="numInput" data-type="number" data-path="liabilities.reMortgage" type="text" />
+            </div>
+            <div class="row">
+              <div class="lbl">Обязательства (бизнес)</div>
+              <input class="numInput" data-type="number" data-path="liabilities.businessLiability" type="text" />
+            </div>
+            <div class="row">
+              <div class="lbl">Банковский кредит (остаток)</div>
+              <input class="numInput" data-type="number" data-path="liabilities.bankLoan" type="text" />
+            </div>
+
+            <div class="totRow tight">
+              <div class="totLbl">Итого обязательств:</div>
+              <div class="underlineValue" id="totalLiabilitiesOut">0</div>
+            </div>
+
+            <div class="totRow tight">
+              <div class="totLbl">Чистая стоимость (Net Worth):</div>
+              <div class="underlineValue" id="netWorthOut">0</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="footerNote">
+      Подсказка: на телефоне открой сайт → меню → “Добавить на главный экран”.
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
